@@ -23,6 +23,45 @@ namespace HuloToys_Service.ElasticSearch
 
         }
 
+        public List<ArticleCategoryESModel> GetByCategoryId(long CategoryId)
+        {
+            try
+            {
+                var nodes = new Uri[] { new Uri(_ElasticHost) };
+                var connectionPool = new StaticConnectionPool(nodes);
+                var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex("people");
+                var elasticClient = new ElasticClient(connectionSettings);
+
+                var query = elasticClient.Search<ArticleCategoryESModel>(sd => sd
+                               .Index(index)
+                               .Query(q => q
+                                   .Term(m => m.Field("categoryid").Value(CategoryId)
+                               )));
+
+                if (query.IsValid)
+                {
+
+                    var data = query.Documents as List<ArticleCategoryESModel>;
+                    //var result = data.Select(a => new ArticleCategoryViewModel
+                    //{
+
+                    //    Id = a.id,
+                    //    ArticleId = a.articleid,
+                    //    CategoryId = a.categoryid,
+
+
+                    //}).ToList();
+                    return data;
+                }
+            }
+            catch (Exception ex)
+            {
+                string error_msg = Assembly.GetExecutingAssembly().GetName().Name + "->" + MethodBase.GetCurrentMethod().Name + "=>" + ex.ToString();
+                LogHelper.InsertLogTelegramByUrl(configuration["BotSetting:bot_token"], configuration["BotSetting:bot_group_id"], error_msg);
+            }
+            return null;
+        }
+
         /// <summary>
         /// batchSize: kích thước mỗi lô
         /// size: tổng số bản ghi tối đa cần lấy
