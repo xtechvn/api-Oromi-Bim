@@ -225,5 +225,35 @@ namespace HuloToys_Service.ElasticSearch
 
             return 0;
         }
+        public ArticleESModel GetDetailById(long id)
+        {
+            try
+            {
+                var nodes = new Uri[] { new Uri(_ElasticHost) };
+                var connectionPool = new StaticConnectionPool(nodes);
+                var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex("people");
+                var elasticClient = new ElasticClient(connectionSettings);
+
+                var query = elasticClient.Search<ArticleESModel>(sd => sd
+                               .Index(configuration["DataBaseConfig:Elastic:Index:SpGetArticle"])
+                               .Query(q => q
+                                   .Term(m => m.Field("id").Value(id)
+                               )));
+
+                if (query.IsValid)
+                {
+
+                    var data = query.Documents as List<ArticleESModel>;
+
+                    return data.FirstOrDefault();
+                }
+            }
+            catch (Exception ex)
+            {
+                string error_msg = Assembly.GetExecutingAssembly().GetName().Name + "->" + MethodBase.GetCurrentMethod().Name + "=>" + ex.ToString();
+                LogHelper.InsertLogTelegramByUrl(configuration["BotSetting:bot_token"], configuration["BotSetting:bot_group_id"], error_msg);
+            }
+            return null;
+        }
     }
 }

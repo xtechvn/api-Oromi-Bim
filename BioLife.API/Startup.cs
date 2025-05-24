@@ -82,6 +82,7 @@ namespace HuloToys_Service
                 app.UseDeveloperExceptionPage();
             }
 
+           
             app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -100,11 +101,11 @@ namespace HuloToys_Service
             });
 
            // Configure the HTTP request pipeline.
-            if (env.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }            
+            //if (env.IsDevelopment())
+            //{
+            //    app.UseSwagger();
+            //    app.UseSwaggerUI();
+            //}            
         }
     }
 }

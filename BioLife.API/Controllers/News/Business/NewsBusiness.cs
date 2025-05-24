@@ -217,7 +217,91 @@ namespace HuloToys_Service.Controllers.News.Business
                 return 0;
             }
         }
+        /// <summary>
+        /// cuonglv
+        /// Lọc những bài faq theo title
+        /// </summary>
+        /// <param name="article_id"></param>
+        /// <returns></returns>
+        public async Task<List<ArticleRelationModel>> FindArticleByTitle(string title, int parent_cate_faq_id)
+        {
+            try
+            {
+                var list_article = new List<ArticleRelationModel>();
 
+                try
+                {
+                    var arr_cate_child_help_id = new List<int>();
+                    var group_product_detail = groupProductESService.GetDetailGroupProductById(parent_cate_faq_id);
+                    if (group_product_detail == null)
+                    {
+                        var group_product_list = groupProductESService.GetListGroupProductByParentId(parent_cate_faq_id);
+                        arr_cate_child_help_id = group_product_list.Select(x => x.id).ToList();
+                    }
+                    arr_cate_child_help_id.Add(group_product_detail.id);
+
+
+
+                    if (arr_cate_child_help_id.Count() > 0)
+                    {
+                        foreach (var item in arr_cate_child_help_id)
+                        {
+                            var groupProductName = string.Empty;
+                            var DetailGroupProductById = groupProductESService.GetDetailGroupProductById(item);
+                            if (DetailGroupProductById.isshowheader == true)
+                            {
+                                groupProductName += DetailGroupProductById.name + ",";
+                            }
+                            var List_articleCategory = articleCategoryESService.GetByCategoryId(DetailGroupProductById.id);
+                            if (List_articleCategory != null && List_articleCategory.Count > 0)
+                            {
+                                foreach (var item2 in List_articleCategory)
+                                {
+                                    var detail_article = article_service.GetDetailById((long)item2.articleid);
+                                    if (detail_article != null)
+                                    {
+                                        var ArticleRelation = new ArticleRelationModel
+                                        {
+                                            Id = detail_article.Id,
+                                            Lead = detail_article.Lead,
+                                            Image = detail_article.Image169 ?? detail_article.Image43 ?? detail_article.Image11,
+                                            Title = detail_article.Title,
+                                            publish_date = detail_article.PublishDate ?? DateTime.Now,
+                                            category_name = groupProductName ?? "Tin tức"
+                                        };
+                                        list_article.Add(ArticleRelation);
+                                    }
+
+                                }
+                            }
+
+                        }
+                        if (list_article.Count > 0)
+                            list_article = list_article.Where(s => s.Title.ToUpper().Contains(title.ToUpper())).GroupBy(x => x.Id).Select(x => x.First()).OrderByDescending(x => x.publish_date).ToList();
+
+                    }
+                    else
+                    {
+                        return null;
+                    }
+
+                }
+                catch (Exception ex)
+                {
+
+                    LogHelper.InsertLogTelegramByUrl(configuration["BotSetting:bot_token"], configuration["BotSetting:bot_group_id"], "[title = " + title + "]FindArticleByTitle - ArticleDAL: transaction.Commit " + ex);
+                    return null;
+                }
+
+                return list_article;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegramByUrl(configuration["BotSetting:bot_token"], configuration["BotSetting:bot_group_id"], "[title = " + title + "]FindArticleByTitle - ArticleDAL:" + ex);
+
+                return null;
+            }
+        }
 
     }
 }
