@@ -3,7 +3,7 @@
     public class ProductRegistration
     {
         public int id { get; set; }
-        public long ProductId { get; set; }
+        public string ProductId { get; set; }
         public long DistrictId { get; set; }
         public long ProvinceId { get; set; }
         public string Phone { get; set; }
