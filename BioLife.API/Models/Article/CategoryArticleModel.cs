@@ -4,7 +4,7 @@ namespace HuloToys_Service.Models.Article
 {
     public class CategoryArticleModel // box tin
     {
-        [PropertyName("Id")]
+        [PropertyName("id")]
         public long id { get; set; }
 
         [PropertyName("Title")]
