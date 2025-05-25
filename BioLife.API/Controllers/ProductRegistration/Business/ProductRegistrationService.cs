@@ -24,7 +24,9 @@ namespace HuloToys_Service.Controllers.ProductRegistration.Business
             try
             {
                 var Insert =await _productRegistrationDAL.InsertProductRegistration(model);
-            
+                return Insert;
+
+
             }
             catch (Exception ex)
             {
