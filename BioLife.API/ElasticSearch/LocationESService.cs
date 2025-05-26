@@ -1,6 +1,7 @@
 ﻿using Elasticsearch.Net;
 using HuloToys_Service.Elasticsearch;
 using HuloToys_Service.Models.Location;
+using HuloToys_Service.Models.Models;
 using HuloToys_Service.Utilities.Lib;
 using Nest;
 using System.Reflection;

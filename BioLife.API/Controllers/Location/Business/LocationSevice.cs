@@ -1,6 +1,7 @@
 ﻿using HuloToys_Service.ElasticSearch;
 using HuloToys_Service.Models;
 using HuloToys_Service.Models.Location;
+using HuloToys_Service.Models.Models;
 using HuloToys_Service.RedisWorker;
 using HuloToys_Service.Utilities.Lib;
 using System.Reflection;

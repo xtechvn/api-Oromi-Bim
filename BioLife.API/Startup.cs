@@ -2,6 +2,8 @@
 using HuloToys_Service.RedisWorker;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Repositories.IRepositories;
+using Repositories.Repositories;
 using System.Text;
 
 namespace HuloToys_Service
@@ -70,6 +72,11 @@ namespace HuloToys_Service
 
             // Register services
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<IProvinceRepository, ProvinceRepository>();
+            services.AddSingleton<IDistrictRepository, DistrictRepository>();
+            services.AddSingleton<IWardRepository, WardRepository>();
+            services.AddSingleton<IOrderRepository, OrderRepository>();
+            services.AddSingleton<IAccountClientRepository, AccountClientRepository>();
 
             services.AddSingleton<RedisConn>();
 
