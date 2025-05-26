@@ -2,12 +2,14 @@
 using HuloToys_Service.Models.Address;
 using HuloToys_Service.Models.APIRequest;
 using HuloToys_Service.Models.Queue;
+using HuloToys_Service.MongoDb;
 using HuloToys_Service.RabitMQ;
 using HuloToys_Service.RedisWorker;
 using HuloToys_Service.Utilities.Lib;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Models.MongoDb;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Reflection;
@@ -18,20 +20,23 @@ namespace HuloToys_Service.Controllers.Comments
 {
     [Route("api")]
     [ApiController]
-    [Authorize]
+
     public class CommentsController : ControllerBase
     {
         private readonly IConfiguration configuration;
         private readonly RedisConn redisService;
         private readonly WorkQueueClient work_queue;
+        private readonly CommentsMongodbService _commentsMongodbService;
         public CommentsController(IConfiguration _configuration, RedisConn _redisService)
         {
             configuration = _configuration;
             redisService = _redisService;
             work_queue = new WorkQueueClient(configuration);
 
+            _commentsMongodbService = new CommentsMongodbService(configuration);
+
         }
-        [HttpPost("push-queue")]
+        [HttpPost("push-comments")]
         public async Task<IActionResult> insertComments([FromBody] APIRequestGenericModel input)
         {
             try
@@ -41,22 +46,14 @@ namespace HuloToys_Service.Controllers.Comments
                 {
                     var request = JsonConvert.DeserializeObject<CommentsModel>(objParr[0].ToString());
                     bool response_queue = false;
-                    
+
                     var comment_model = JsonConvert.SerializeObject(request);
                     if (comment_model != null)
                     {
 
-                        var j_param = new Dictionary<string, string>
-                    {
-                        {"data_push", comment_model}, // có thể là json
-                        {"type",request.Type_Queue.ToString()}
-                    };
-                        var _data_push = JsonConvert.SerializeObject(j_param);
-
-                        // Execute Push Queue
-
-                        response_queue = work_queue.InsertQueueSimple(_data_push, QueueName.queue_app_push);
-                        if (response_queue)
+                        // Execute Push mongo
+                        var id = await _commentsMongodbService.Insert(request);
+                        if (id != null)
                         {
                             return Ok(new
                             {
