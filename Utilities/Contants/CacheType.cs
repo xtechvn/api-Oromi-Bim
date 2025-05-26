@@ -25,5 +25,10 @@
         public const string PRODUCT_BY_BRAND = "PRODUCT_BY_BRAND_";
         public const string PRODUCT_BY_PRICERANGE = "PRODUCT_BY_PRICERANGE_";
 
+        public const string PROVINCE = "PROVINCE";
+        public const string DISTRICT = "DISTRICT";
+        public const string WARD = "WARD";
+        public const string LABEL = "LABEL";
+
     }
 }

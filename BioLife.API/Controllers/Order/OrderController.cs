@@ -17,6 +17,9 @@ using HuloToys_Service.Controllers.Order.Business;
 using HuloToys_Service.RedisWorker;
 using HuloToys_Service.Models.Orders;
 using HuloToys_Service.Models.APIRequest;
+using Repositories.IRepositories;
+using Repositories.Repositories;
+using HuloToys_Service.Controllers.Orders.Business;
 
 namespace HuloToys_Service.Controllers
 {
@@ -34,8 +37,16 @@ namespace HuloToys_Service.Controllers
         private readonly WorkQueueClient work_queue;
         private readonly IdentiferService identiferService;
         private readonly RedisConn _redisService;
-
-        public OrderController(IConfiguration _configuration, RedisConn redisService)
+        private readonly IProvinceRepository provinceRepository;
+        private readonly IDistrictRepository districtRepository;
+        private readonly IWardRepository wardRepository;
+        private readonly OrderService orderService;
+        private readonly IOrderRepository orderRepository;
+        private readonly IAccountClientRepository accountClientRepository;
+        private readonly ProductDetailMongoAccess productDetailMongoAccess;
+        public OrderController(IConfiguration _configuration, RedisConn redisService,
+            IProvinceRepository _provinceRepository, IDistrictRepository _districtRepository, IWardRepository _wardRepository, IOrderRepository _orderRepository,
+            IAccountClientRepository _accountClientRepository)
         {
             configuration = _configuration;
 
@@ -48,6 +59,13 @@ namespace HuloToys_Service.Controllers
             identiferService = new IdentiferService(_configuration);
             _redisService = new RedisConn(configuration);
             _redisService.Connect();
+            provinceRepository=_provinceRepository;
+            districtRepository=_districtRepository;
+            wardRepository=_wardRepository;
+            orderRepository = _orderRepository;
+            orderService =new OrderService(configuration, _redisService,provinceRepository,districtRepository,wardRepository, _orderRepository);
+            productDetailMongoAccess=new ProductDetailMongoAccess(configuration);
+            accountClientRepository = _accountClientRepository;
         }
 
         [HttpPost("history")]
@@ -424,6 +442,160 @@ namespace HuloToys_Service.Controllers
                         status = (int)ResponseType.SUCCESS,
                         msg = "Success",
                         data = new OrderConfirmResponseModel { order_no = order_no, id = result, pushed= pushed_queue }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                string error_msg = Assembly.GetExecutingAssembly().GetName().Name + "->" + MethodBase.GetCurrentMethod().Name + "=>" + ex.Message;
+                LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], error_msg);
+                return Ok(new
+                {
+                    status = (int)ResponseType.FAILED,
+                    msg = ResponseMessages.FunctionExcutionFailed
+                });
+
+            }
+            return Ok(new
+            {
+                status = (int)ResponseType.FAILED,
+                msg = ResponseMessages.FunctionExcutionFailed
+            });
+        }
+        [HttpPost("confirm-order")]
+        public async Task<ActionResult> ConfirmOrder([FromBody] APIRequestGenericModel input)
+        {
+            try
+            {
+                //CartConfirmRequestModel model_json = new CartConfirmRequestModel()
+                //{
+                //    account_client_id = 17,
+                //    carts = new List<CartConfirmItemRequestModel>
+                //    {
+                //        new CartConfirmItemRequestModel()
+                //        {
+                //            id="682ef1aa0b7252f656aadb16",
+                //            product_id="682ef1aa0b7252f656aadb16",
+                //             quanity=2
+                //        }
+                //    },
+                //    delivery_type = 0,
+                //    payment_type = 0,
+                //    address=new AddressClientFEModel()
+                //    {
+                //        address="So 001,ngo 00xx, duong XXX,",
+                //        phone="0123456789",
+                //        receivername="Nguyen van A",
+                //        provinceid="01",
+                //        districtid="001",
+                //        wardid= "00001"
+                //    },
+                //    address_id=0,
+                    
+                    
+                //};
+                //input = new APIRequestGenericModel()
+                //{
+                //    token = CommonHelper.Encode(JsonConvert.SerializeObject(model_json), configuration["KEY:private_key"])
+                //};
+
+                JArray objParr = null;
+                if (input != null && input.token != null && CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
+                {
+                    var request = JsonConvert.DeserializeObject<CartConfirmRequestModel>(objParr[0].ToString());
+                    if (request == null || request.account_client_id == null || request.account_client_id <= 0
+                        || request.carts == null || request.carts.Count <= 0)
+                    {
+
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.FAILED,
+                            msg = ResponseMessages.DataInvalid
+                        });
+                    }
+                    var count = await orderRepository.CountOrderByYear();
+                    if (count < 0)
+                    {
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.FAILED,
+                            msg = ResponseMessages.FunctionExcutionFailed
+                        });
+                    }
+                    var order_no = await identiferService.buildOrderNo(count);
+                    var model = new OrderDetailMongoDbModel()
+                    {
+                        account_client_id = request.account_client_id,
+                        carts = new List<CartItemMongoDbModel>(),
+                        payment_type = request.payment_type,
+                        delivery_type = request.delivery_type,
+                        order_no = order_no,
+                        total_amount = 0,
+                        address_id = request.address_id,
+                        provinceid=request.address.provinceid,
+                        districtid=request.address.districtid,
+                        wardid=request.address.wardid,
+                        receivername=request.address.receivername,
+                        phone=request.address.phone,
+                        address=request.address.address,
+                        
+                    };
+
+                    foreach (var item in request.carts)
+                    {
+                        var p = await productDetailMongoAccess.GetByID(item.product_id);
+                        //if (cart == null
+                        //    || cart._id == null || cart._id.Trim() == ""
+                        //    || cart.account_client_id != request.account_client_id)
+                        //{
+                        //    return Ok(new
+                        //    {
+                        //        status = (int)ResponseType.FAILED,
+                        //        msg = ResponseMessages.DataInvalid
+                        //    });
+                        //}
+                        //else
+                        //{
+                        //    cart.quanity = item.quanity;
+                        //    model.carts.Add(cart);
+                        //    model.total_amount += cart.total_amount;
+                        //    await _cartMongodbService.Delete(item.id);
+                        //}
+                        model.carts.Add(new CartItemMongoDbModel()
+                        {
+                            account_client_id= request.account_client_id,
+                            created_date = DateTime.Now,
+                            product=p,
+                            quanity= (item.quanity <= 1 ? 1 : item.quanity),
+                            total_amount=p.amount * (item.quanity<=1 ? 1: item.quanity),
+                            total_discount=0,
+                            total_price= p.price * (item.quanity <= 1 ? 1 : item.quanity),
+                            total_profit= p.profit * (item.quanity <= 1 ? 1 : item.quanity),  
+                        });
+                        model.total_amount += p.amount * (item.quanity <= 1 ? 1 : item.quanity);
+                    }
+                    var account= accountClientRepository.GetById(request.account_client_id);    
+                    //-- save all at mongodb
+                    await orderService.CreateOrder(model, account);
+                    if(model.order==null || model.order.OrderId<=0)
+                    {
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.FAILED,
+                            msg = ResponseMessages.FunctionExcutionFailed
+                        });
+                    }
+                    //-- Mongodb:
+                    var result = await orderMongodbService.Insert(model);
+                    ////-- Insert Queue:
+                    //var queue_model = new CheckoutQueueModel() { event_id = (int)CheckoutEventID.CREATE_ORDER, order_mongo_id = result };
+                    //var pushed_queue = work_queue.InsertQueueSimpleDurable(JsonConvert.SerializeObject(queue_model), QueueName.QUEUE_CHECKOUT);
+
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.SUCCESS,
+                        msg = "Success",
+                        data = new OrderConfirmResponseModel { order_no = order_no, id = result, pushed = true, order_id=model.order.OrderId }
                     });
                 }
             }

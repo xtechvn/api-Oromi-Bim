@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Repositories.IRepositories;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Security.Claims;
@@ -23,11 +24,13 @@ namespace HuloToys_Service.Controllers
     {
         private readonly IConfiguration configuration;
         private readonly AccountApiESService accountApiESService;
+        private readonly IAccountClientRepository accountClientRepository;
 
-        public AuthController(IConfiguration _configuration)
+        public AuthController(IConfiguration _configuration, IAccountClientRepository _accountClientRepository)
         {
             configuration = _configuration;
             accountApiESService = new AccountApiESService(_configuration["DataBaseConfig:Elastic:Host"], _configuration);
+            accountClientRepository=_accountClientRepository;
         }
 
         [HttpPost("login")]
@@ -46,11 +49,12 @@ namespace HuloToys_Service.Controllers
                         msg = "Thông tin đăng nhập không đúng. Xin vui lòng thử lại"
                     });
                 }
-
-                var accountClient = accountApiESService.GetByUsername(user.Username);
+                
+                // var accountClient = accountApiESService.GetByUsername(user.Username);
+                var accountClient = accountClientRepository.GetAccessAPIByUsername(user.Username);
                 if (accountClient == null) { return Ok(new { status = (int)ResponseType.ERROR, msg = "Tài khoản " + user.Username + " không tồn tại" }); }
-                if (accountClient.status != (int)AccountClientStatusType.BINH_THUONG) { return Ok(new { status = (int)ResponseType.ERROR, msg = "Tài khoản đã khóa" }); }
-                if (user.Username == accountClient.username && user.Password == accountClient.password)
+                if (accountClient.Status != (int)AccountClientStatusType.BINH_THUONG) { return Ok(new { status = (int)ResponseType.ERROR, msg = "Tài khoản đã khóa" }); }
+                if (user.Username == accountClient.UserName && user.Password == accountClient.Password)
                 {
                     var token = GenerateJwtToken(user.Username);
                     return Ok(new { status = (int)ResponseType.SUCCESS, token });

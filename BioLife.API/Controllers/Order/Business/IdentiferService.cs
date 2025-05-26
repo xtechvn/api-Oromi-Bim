@@ -5,7 +5,7 @@ using HuloToys_Service.Utilities.Lib;
 using Microsoft.Extensions.Options;
 using System.Reflection;
 
-namespace HuloToys_Service.Controllers.Order.Business
+namespace HuloToys_Service.Controllers.Orders.Business
 {
     public class IdentiferService
     {

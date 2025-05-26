@@ -1,4 +1,6 @@
-﻿using Entities.ViewModels.Products;
+﻿using Entities.Models;
+using Entities.ViewModels.Products;
+using HuloToys_Service.Models.Models;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -27,6 +29,21 @@ namespace Models.MongoDb
         public string utm_medium { get; set; }
 
         public int voucher_id { get; set; }
+        public string receivername { get; set; }
+
+        public string phone { get; set; }
+
+        public string? provinceid { get; set; }
+
+        public string? districtid { get; set; }
+
+        public string? wardid { get; set; }
+
+        public string address { get; set; }
+        public long address_id { get; set; }
+
+        public Order order { get; set; }
+        public List<OrderDetail> order_detail { get; set; }
 
     }
 }

@@ -9,14 +9,12 @@ using Utilities.Contants;
 using Models.Queue;
 using HuloToys_Service.RabitMQ;
 using Caching.Elasticsearch;
-using HuloToys_Service.Models.Queue;
 using HuloToys_Service.Utilities.constants;
-using HuloToys_Service.Controllers.Order.Business;
 using HuloToys_Service.Models.Client;
 using HuloToys_Service.Models.APIRequest;
 using HuloToys_Front_End.Models.Products;
-using HuloToys_Service.MongoDb;
 using HuloToys_Service.RedisWorker;
+using HuloToys_Service.Controllers.Orders.Business;
 
 namespace HuloToys_Service.Controllers
 {

@@ -5,6 +5,7 @@
         public string id { get; set; }
         public string order_no { get; set; }
         public bool pushed { get; set; }
+        public long order_id { get; set; }
 
     }
 }
