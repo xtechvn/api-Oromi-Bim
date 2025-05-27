@@ -44,6 +44,7 @@ namespace Models.MongoDb
 
         public Order order { get; set; }
         public List<OrderDetail> order_detail { get; set; }
+        public string note { get; set; }
 
     }
 }
