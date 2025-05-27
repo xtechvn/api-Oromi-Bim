@@ -55,8 +55,8 @@ namespace HuloToys_Service.ElasticSearch
                     .Query(q => q
                         .Bool(b => b
                             .Must(
-                                m => m.Term(t => t.Field("status").Value(ArticleStatus.PUBLISH.ToString())),
-                                m => m.Term(t => t.Field("parentid").Value(parent_id))
+                                m => m.Term(t => t.Field("Status").Value(ArticleStatus.PUBLISH.ToString())),
+                                m => m.Term(t => t.Field("ParentId").Value(parent_id))
                             )
                         )
                     )
@@ -105,7 +105,7 @@ namespace HuloToys_Service.ElasticSearch
                           .Query(q =>
                            q.Bool(
                                qb => qb.Must(
-                                  q => q.Match(m => m.Field("status").Query(ArticleStatus.PUBLISH.ToString())),
+                                  q => q.Match(m => m.Field("Status").Query(ArticleStatus.PUBLISH.ToString())),
                                    sh => sh.Match(m => m.Field("id").Query(id.ToString())
                                    )
                                    )
