@@ -534,9 +534,10 @@ namespace HuloToys_Service.Controllers
                         provinceid=request.address.provinceid,
                         districtid=request.address.districtid,
                         wardid=request.address.wardid,
-                        receivername=request.address.receivername,
-                        phone=request.address.phone,
+                        receivername=request.receivername,
+                        phone=request.phone,
                         address=request.address.address,
+                        note=request.note,
                         
                     };
 
