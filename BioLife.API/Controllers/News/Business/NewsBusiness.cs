@@ -2,6 +2,7 @@
 using HuloToys_Service.Models.Article;
 using HuloToys_Service.Models.ElasticSearch;
 using HuloToys_Service.Utilities.Lib;
+using MongoDB.Driver;
 
 namespace HuloToys_Service.Controllers.News.Business
 {
@@ -302,6 +303,39 @@ namespace HuloToys_Service.Controllers.News.Business
                 return null;
             }
         }
+        public async Task<ArticleFeModel> GetMostViewedArticle(long article_id)
+        {
+            try
+            {
 
+                var detail = await getArticleDetail(article_id);
+
+                if (detail != null)
+                {
+                    //var group = GetById(detail.category_id);
+                    //if (group != null && !group.isshowheader) return null;
+                    var fe_detail = new ArticleFeModel()
+                    {
+                        id = detail.id,
+                        lead = detail.lead,
+                        publish_date = detail.publish_date,
+                        title = detail.title,
+                        image_11 = detail.image_11,
+                        image_43 = detail.image_43,
+                        image_169 = detail.image_169,
+                        //article_type = detail.article_type,
+                        category_name = detail.list_category_name,
+
+                    };
+                    return fe_detail;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegramByUrl(configuration["BotSetting:bot_token"], configuration["BotSetting:bot_group_id"], "[API]ArticleRepository - GetMostViewedArticle: " + ex);
+            }
+            return null;
+        }
     }
 }

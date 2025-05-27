@@ -2,6 +2,7 @@
 using HuloToys_Service.Models.APIRequest;
 using HuloToys_Service.Models.Article;
 using HuloToys_Service.Models.ElasticSearch;
+using HuloToys_Service.MongoDb;
 using HuloToys_Service.RedisWorker;
 using HuloToys_Service.Utilities.Lib;
 using Microsoft.AspNetCore.Authorization;
@@ -23,6 +24,7 @@ namespace HuloToys_Service.Controllers
         public IConfiguration configuration;
         private readonly RedisConn _redisService;
         private readonly NewsBusiness _newsBusiness;
+        private readonly NewsMongoService _newsMongoService;
 
         public NewsController(IConfiguration config, RedisConn redisService)
         {
@@ -32,6 +34,7 @@ namespace HuloToys_Service.Controllers
             _redisService = new RedisConn(config);
             _redisService.Connect();
             _newsBusiness = new NewsBusiness(configuration);
+            _newsMongoService = new NewsMongoService(configuration);
 
         }
 
@@ -246,7 +249,13 @@ namespace HuloToys_Service.Controllers
                     }
 
                     if (article_detail != null)
-                    {                        
+                    {
+                        var view_count = new NewsViewCount()
+                        {
+                            articleID = article_id,
+                            pageview = 1
+                        };
+                        await _newsMongoService.AddNewOrReplace(view_count);
 
                         return Ok(new
                         {
@@ -366,6 +375,81 @@ namespace HuloToys_Service.Controllers
                     status = (int)ResponseType.FAILED,
                     msg = "find-article.json = " + ex.ToString(),
                     _token = input.token
+                });
+            }
+        }
+        [HttpPost("get-most-viewed-article.json")]
+        public async Task<ActionResult> GetMostViewedArticle([FromBody] APIRequestGenericModel input)
+        {
+            try
+            {
+                int status = (int)ResponseType.FAILED;
+                string msg = "No Item Found";
+                var data_list = new List<ArticleFeModel>();
+                JArray objParr = null;
+                if (input != null && input.token != null && CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
+                {
+                    string cache_name = CacheType.ARTICLE_MOST_VIEWED;
+                    string j_data = null;
+                    try
+                    {
+                        j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.InsertLogTelegramByUrl(configuration["BotSetting:bot_token"], configuration["BotSetting:bot_group_id"], "NewsController - GetMostViewedArticle: " + ex + "\n Token: " + input.token);
+
+                    }
+                    var detail = new ArticleFeModel();
+
+                    if (j_data != null && j_data != "[]")
+                    {
+                        data_list = JsonConvert.DeserializeObject<List<ArticleFeModel>>(j_data);
+                        msg = "Get From Cache Success";
+
+                    }
+                    else
+                    {
+                        var list = await _newsMongoService.GetMostViewedArticle();
+                        if (list != null && list.Count > 0)
+                        {
+                            foreach (var item in list)
+                            {
+                                var article = await _newsBusiness.GetMostViewedArticle(item.articleID);
+                                if (article != null) data_list.Add(article);
+                            }
+                            try
+                            {
+                                _redisService.Set(cache_name, JsonConvert.SerializeObject(data_list), DateTime.Now.AddMinutes(5), Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                            }
+                            catch (Exception ex)
+                            {
+                                LogHelper.InsertLogTelegramByUrl(configuration["BotSetting:bot_token"], configuration["BotSetting:bot_group_id"], "NewsController - GetMostViewedArticle: " + ex + "\n Token: " + input.token);
+
+                            }
+                            status = (int)ResponseType.SUCCESS;
+                            msg = "Get from DB Success";
+                        }
+                    }
+                    return Ok(new { status = (int)ResponseType.SUCCESS, msg = msg, data = data_list });
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.FAILED,
+                        msg = "Token không hợp lệ"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegramByUrl(configuration["BotSetting:bot_token"], configuration["BotSetting:bot_group_id"], "NewsController - GetMostViewedArticle: " + ex + " token = " + input.token);
+
+                return Ok(new
+                {
+                    status = (int)ResponseType.ERROR,
+                    msg = "Error on Excution"
                 });
             }
         }
