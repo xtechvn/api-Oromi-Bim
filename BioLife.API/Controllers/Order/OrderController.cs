@@ -503,8 +503,7 @@ namespace HuloToys_Service.Controllers
                 if (input != null && input.token != null && CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
                 {
                     var request = JsonConvert.DeserializeObject<CartConfirmRequestModel>(objParr[0].ToString());
-                    if (request == null || request.account_client_id == null || request.account_client_id <= 0
-                        || request.carts == null || request.carts.Count <= 0)
+                    if (request == null || request.carts == null || request.carts.Count <= 0)
                     {
 
                         return Ok(new
