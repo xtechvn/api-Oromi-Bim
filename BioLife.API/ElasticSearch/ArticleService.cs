@@ -205,8 +205,16 @@ namespace HuloToys_Service.ElasticSearch
                     var countResponse = elasticClient.Count<CategoryArticleModel>(c => c
                     .Index(configuration["DataBaseConfig:Elastic:Index:SpGetArticle"])  // Chỉ mục bạn muốn tìm kiếm
                     .Query(q => q
-                        .Term(t => t.Field("categoryid").Value(category_id))  // Tìm theo category_id
-                    ));
+                            .Bool(b => b
+                                .Must(m => m
+                                    .Wildcard(w => w
+                                        .Field(f => f.list_category_id)
+                                        .Value("*" + category_id.ToString() + "*") // Tìm các chuỗi chứa ký tự liên quan
+                                    )
+                                )
+                            )
+                        )
+                    );
                     totalCount = Convert.ToInt32(countResponse.Count);
                 }
                 else
