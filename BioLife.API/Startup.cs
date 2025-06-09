@@ -1,6 +1,7 @@
 ﻿using Entities.ConfigModels;
 using HuloToys_Service.RedisWorker;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using Repositories.IRepositories;
 using Repositories.Repositories;
@@ -79,6 +80,16 @@ namespace HuloToys_Service
             services.AddSingleton<IAccountClientRepository, AccountClientRepository>();
 
             services.AddSingleton<RedisConn>();
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders =
+                    ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+                // Tùy chọn: Thêm các IP tin cậy của Cloudflare để tăng cường bảo mật.
+                // Nếu không, middleware sẽ tin cậy bất kỳ IP nào gửi header này.
+                // options.KnownProxies.Add(IPAddress.Parse("172.16.0.0")); // Thay bằng IP của Cloudflare
+                // options.KnownNetworks.Add(new IPNetwork(IPAddress.Parse("172.16.0.0"), 20)); // Hoặc dải IP
+            });
 
         }
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -89,8 +100,8 @@ namespace HuloToys_Service
                 app.UseDeveloperExceptionPage();
             }
 
-           
-            app.UseHttpsRedirection();
+            app.UseForwardedHeaders();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
 
