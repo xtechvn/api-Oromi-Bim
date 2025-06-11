@@ -6,6 +6,7 @@ using HuloToys_Service.MongoDb;
 using HuloToys_Service.RedisWorker;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Nest;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Utilities;
@@ -149,6 +150,12 @@ namespace WEB.CMS.Controllers
                     if (data != null)
                     {
                         _redisService.Set(cache_name, JsonConvert.SerializeObject(data), node_redis);
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.SUCCESS,
+                            msg = ResponseMessages.Success,
+                            data = data
+                        });
                     }
                     var request = JsonConvert.DeserializeObject<ProductDetailRequestModel>(objParr[0].ToString());
 
