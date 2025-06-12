@@ -31,12 +31,38 @@ namespace HuloToys_Service.Controllers.Location.Business
                 LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], MethodBase.GetCurrentMethod().Name + "=>" + ex.Message);
                 return null;
             }
+        } 
+        public async Task<Province> GetProvincesByProvinceId(string ProvinceId)
+        {
+            try
+            {
+                var result= _locationESService.GetProvincesByProvinceId(ProvinceId);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], MethodBase.GetCurrentMethod().Name + "=>" + ex.Message);
+                return null;
+            }
         }
         public async Task<List<District>> GetAllDistrict()
         {
             try
             {
                 var result = _locationESService.GetAllDistrict();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], MethodBase.GetCurrentMethod().Name + "=>" + ex.Message);
+                return null;
+            }
+        }  
+        public async Task<District> GetDistrictByDistrictId(string DistrictId)
+        {
+            try
+            {
+                var result = _locationESService.GetDistrictByDistrictId(DistrictId);
                 return result;
             }
             catch (Exception ex)

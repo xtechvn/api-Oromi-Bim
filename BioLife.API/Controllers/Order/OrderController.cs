@@ -20,6 +20,9 @@ using HuloToys_Service.Models.APIRequest;
 using Repositories.IRepositories;
 using Repositories.Repositories;
 using HuloToys_Service.Controllers.Orders.Business;
+using HuloToys_Service.Models;
+using HuloToys_Service.Controllers.Location.Business;
+using Nest;
 
 namespace HuloToys_Service.Controllers
 {
@@ -44,6 +47,8 @@ namespace HuloToys_Service.Controllers
         private readonly IOrderRepository orderRepository;
         private readonly IAccountClientRepository accountClientRepository;
         private readonly ProductDetailMongoAccess productDetailMongoAccess;
+        private readonly GoogleSheetsWriter googleSheetsWriter;
+        private readonly LocationSevice locationSevice;
         public OrderController(IConfiguration _configuration, RedisConn redisService,
             IProvinceRepository _provinceRepository, IDistrictRepository _districtRepository, IWardRepository _wardRepository, IOrderRepository _orderRepository,
             IAccountClientRepository _accountClientRepository)
@@ -66,6 +71,8 @@ namespace HuloToys_Service.Controllers
             orderService =new OrderService(configuration, _redisService,provinceRepository,districtRepository,wardRepository, _orderRepository);
             productDetailMongoAccess=new ProductDetailMongoAccess(configuration);
             accountClientRepository = _accountClientRepository;
+            googleSheetsWriter = new GoogleSheetsWriter(_configuration);
+            locationSevice = new LocationSevice(_configuration, _redisService);
         }
 
         [HttpPost("history")]
@@ -574,10 +581,10 @@ namespace HuloToys_Service.Controllers
                         });
                         model.total_amount += p.amount * (item.quanity <= 1 ? 1 : item.quanity);
                     }
-                    var account= accountClientRepository.GetById(request.account_client_id);    
+                    var account= accountClientRepository.GetById(request.account_client_id);
                     //-- save all at mongodb
                     await orderService.CreateOrder(model, account);
-                    if(model.order==null || model.order.OrderId<=0)
+                    if (model.order == null || model.order.OrderId <= 0)
                     {
                         return Ok(new
                         {
@@ -587,15 +594,33 @@ namespace HuloToys_Service.Controllers
                     }
                     //-- Mongodb:
                     var result = await orderMongodbService.Insert(model);
-                    ////-- Insert Queue:
-                    //var queue_model = new CheckoutQueueModel() { event_id = (int)CheckoutEventID.CREATE_ORDER, order_mongo_id = result };
-                    //var pushed_queue = work_queue.InsertQueueSimpleDurable(JsonConvert.SerializeObject(queue_model), QueueName.QUEUE_CHECKOUT);
+                  
+                     ////-- Insert Queue:
+                     //var queue_model = new CheckoutQueueModel() { event_id = (int)CheckoutEventID.CREATE_ORDER, order_mongo_id = result };
+                     //var pushed_queue = work_queue.InsertQueueSimpleDurable(JsonConvert.SerializeObject(queue_model), QueueName.QUEUE_CHECKOUT);
+
+                     //GoogleSheets
+                     var Province_detail =await locationSevice.GetProvincesByProvinceId(request.address.provinceid.ToString());
+                    var District_detail =await locationSevice.GetDistrictByDistrictId(request.address.districtid.ToString());
+                    GoogleSheetsViewModel detail = new GoogleSheetsViewModel();
+                    detail.CreatedDate = DateTime.Now.ToString("dd/MM/yyyy");
+                    detail.OrderNo = model.order_no;
+                    detail.Name = model.carts[0].product.name;
+                    detail.Note = request.note;
+                    detail.Quantity = request.carts[0].quanity.ToString();
+                    detail.ProvinceName = Province_detail.Name;
+                    detail.DistrictName = District_detail.Name;
+                    detail.FullName = request.receivername;
+                    detail.Phone = request.phone;
+                    detail.TotalAmount = model.carts[0].total_amount.ToString("N0");
+                   
+                    googleSheetsWriter.AppendData(detail);
 
                     return Ok(new
                     {
                         status = (int)ResponseType.SUCCESS,
                         msg = "Success",
-                        data = new OrderConfirmResponseModel { order_no = order_no, id = result, pushed = true, order_id=model.order.OrderId }
+                        //data = new OrderConfirmResponseModel { order_no = order_no, id = result, pushed = true, order_id=model.order.OrderId }
                     });
                 }
             }
