@@ -45,12 +45,13 @@ namespace HuloToys_Service.Controllers.Comments
                 if (input != null && input.token != null && CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
                 {
                     var request = JsonConvert.DeserializeObject<CommentsModel>(objParr[0].ToString());
+                    request.CreateDate = DateTime.Now;
                     bool response_queue = false;
 
                     var comment_model = JsonConvert.SerializeObject(request);
                     if (comment_model != null)
                     {
-
+                       
                         // Execute Push mongo
                         var id = await _commentsMongodbService.Insert(request);
                         if (id != null)
