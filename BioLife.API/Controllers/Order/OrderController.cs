@@ -620,7 +620,7 @@ namespace HuloToys_Service.Controllers
                     {
                         status = (int)ResponseType.SUCCESS,
                         msg = "Success",
-                        //data = new OrderConfirmResponseModel { order_no = order_no, id = result, pushed = true, order_id=model.order.OrderId }
+                        data = new OrderConfirmResponseModel { order_no = order_no, id = result, pushed = true, order_id=model.order.OrderId }
                     });
                 }
             }
