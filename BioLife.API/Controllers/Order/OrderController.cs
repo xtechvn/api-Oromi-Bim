@@ -617,7 +617,7 @@ namespace HuloToys_Service.Controllers
                     detail.Phone = request.phone;
                     detail.TotalAmount = model.carts[0].total_amount.ToString("N0");
 
-                    //googleSheetsWriter.AppendData(detail);
+                    googleSheetsWriter.AppendData(detail);
                     mailService.sendMail(detail);
                     return Ok(new
                     {
