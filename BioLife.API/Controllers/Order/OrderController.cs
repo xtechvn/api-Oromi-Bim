@@ -548,6 +548,7 @@ namespace HuloToys_Service.Controllers
                         phone=request.phone,
                         address=request.address.address,
                         note=request.note,
+                        email=request.email,
                         
                     };
 
@@ -616,6 +617,7 @@ namespace HuloToys_Service.Controllers
                     detail.FullName = request.receivername;
                     detail.Phone = request.phone;
                     detail.TotalAmount = model.carts[0].total_amount.ToString("N0");
+                    detail.Email = request.email;
 
                     googleSheetsWriter.AppendData(detail);
                     mailService.sendMail(detail);

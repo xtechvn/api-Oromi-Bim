@@ -12,5 +12,6 @@
         public string ProvinceName { get; set; }
         public string DistrictName { get; set; }
         public string CreatedDate { get; set; }
+        public string Email { get; set; }
     }
 }

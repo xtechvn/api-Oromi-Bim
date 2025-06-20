@@ -24,7 +24,7 @@ namespace HuloToys_Service.Service.EMail
             {
                 MailMessage message = new MailMessage();
 
-                var subject = "XÁC NHẬN ĐƠN HÀNG "+ model.Name+ DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+                var subject = "XÁC NHẬN ĐƠN HÀNG "+ model.Name +" "+ DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
                 message.Subject = subject;
                 var html = "<table style='border: 1px solid #b3c7db;color: #465869;border-collapse: collapse;'> <tbody>     <tr>         " +
                     "<th style='border: 1px solid #b3c7db;color: #465869;'>Mã đơn</th>" +
@@ -37,6 +37,7 @@ namespace HuloToys_Service.Service.EMail
                     "<th style='border: 1px solid #b3c7db;color: #465869;'>Tỉnh thành</th>  " +
                     "<th style='border: 1px solid #b3c7db;color: #465869;'>Khu vực hoạt động</th>  " +
                     "<th style='border: 1px solid #b3c7db;color: #465869;'>Ngày tạo</th> " +
+                    "<th style='border: 1px solid #b3c7db;color: #465869;'>Email</th> " +
                     "</tr><tr>" +
                     "<td style='border: 1px solid #b3c7db;color: #465869;'>" + model.OrderNo+ "</td>" +
                     "<td style='border: 1px solid #b3c7db;color: #465869;'>" + model.FullName + "</td>" +
@@ -48,6 +49,7 @@ namespace HuloToys_Service.Service.EMail
                     "<td style='border: 1px solid #b3c7db;color: #465869;'>" + model.ProvinceName + "</td>" +
                     "<td style='border: 1px solid #b3c7db;color: #465869;'>" + model.DistrictName + "</td>" +
                     "<td style='border: 1px solid #b3c7db;color: #465869;'>" + model.CreatedDate + "</td>" +
+                    "<td style='border: 1px solid #b3c7db;color: #465869;'>" + model.Email + "</td>" +
                     "</tr>\r\n</tbody>\r\n</table>";
                 //configsendemail
                 string from_mail = configuration["MAIL_CONFIG:FROM_MAIL"];
@@ -65,7 +67,7 @@ namespace HuloToys_Service.Service.EMail
                 smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
                 smtp.Credentials = new NetworkCredential(sendEmailsFrom, sendEmailsFromPassword);
                 smtp.Timeout = 20000;
-                message.To.Add("happykids8386@gmail.com");
+                message.To.Add(model.Email);
                 message.CC.Add("happykids8386@gmail.com");
                 message.CC.Add("Omoribaby@hotmail.com");
                 smtp.Send(message);

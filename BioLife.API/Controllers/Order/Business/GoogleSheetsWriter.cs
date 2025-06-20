@@ -87,7 +87,7 @@ namespace HuloToys_Service.Controllers.Order.Business
                 var additionalData = new List<IList<object>>
                 {
                     new List<object> { ""+data.OrderNo+"", "" + data.FullName + "",  ""+data.Phone+"", ""+data.Name+"", ""+data.Quantity+"",
-                        ""+data.TotalAmount+"", ""+data.Note+"", ""+data.ProvinceName+"", ""+data.DistrictName+"",""+data.CreatedDate+""},
+                        ""+data.TotalAmount+"", ""+data.Note+"", ""+data.ProvinceName+"", ""+data.DistrictName+"",""+data.CreatedDate+"",""+data.Email+""},
                     
                 };
 
