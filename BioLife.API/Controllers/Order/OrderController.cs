@@ -23,6 +23,7 @@ using HuloToys_Service.Controllers.Orders.Business;
 using HuloToys_Service.Models;
 using HuloToys_Service.Controllers.Location.Business;
 using Nest;
+using HuloToys_Service.Service.EMail;
 
 namespace HuloToys_Service.Controllers
 {
@@ -49,6 +50,7 @@ namespace HuloToys_Service.Controllers
         private readonly ProductDetailMongoAccess productDetailMongoAccess;
         private readonly GoogleSheetsWriter googleSheetsWriter;
         private readonly LocationSevice locationSevice;
+        private readonly MailService mailService;
         public OrderController(IConfiguration _configuration, RedisConn redisService,
             IProvinceRepository _provinceRepository, IDistrictRepository _districtRepository, IWardRepository _wardRepository, IOrderRepository _orderRepository,
             IAccountClientRepository _accountClientRepository)
@@ -73,6 +75,7 @@ namespace HuloToys_Service.Controllers
             accountClientRepository = _accountClientRepository;
             googleSheetsWriter = new GoogleSheetsWriter(_configuration);
             locationSevice = new LocationSevice(_configuration, _redisService);
+            mailService = new MailService(_configuration);
         }
 
         [HttpPost("history")]
@@ -613,9 +616,9 @@ namespace HuloToys_Service.Controllers
                     detail.FullName = request.receivername;
                     detail.Phone = request.phone;
                     detail.TotalAmount = model.carts[0].total_amount.ToString("N0");
-                   
-                    googleSheetsWriter.AppendData(detail);
 
+                    //googleSheetsWriter.AppendData(detail);
+                    mailService.sendMail(detail);
                     return Ok(new
                     {
                         status = (int)ResponseType.SUCCESS,
