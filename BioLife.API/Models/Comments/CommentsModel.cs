@@ -20,6 +20,7 @@ namespace HuloToys_Service.Models.Address
         public string phone { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
+        public string Email { get; set; }
         public DateTime CreateDate { get; set; }
     }
 }
