@@ -75,6 +75,7 @@ namespace HuloToys_Service.MongoDb
                 var filter = Builders<ProductMongoDbModel>.Filter;
                 var filterDefinition = filter.Empty;
                 filterDefinition &= Builders<ProductMongoDbModel>.Filter.Eq(x => x._id, id); ;
+                filterDefinition &= Builders<ProductMongoDbModel>.Filter.Eq(x => x.status, (int)ProductStatus.ACTIVE);
                 var model = await _productDetailCollection.Find(filterDefinition).FirstOrDefaultAsync();
                 return model;
             }
@@ -91,7 +92,8 @@ namespace HuloToys_Service.MongoDb
             {
                 var filter = Builders<ProductMongoDbModel>.Filter;
                 var filterDefinition = filter.Empty;
-                filterDefinition &= Builders<ProductMongoDbModel>.Filter.Eq(x => x._id, id); ;
+                filterDefinition &= Builders<ProductMongoDbModel>.Filter.Eq(x => x._id, id);
+                filterDefinition &= Builders<ProductMongoDbModel>.Filter.Eq(x => x.status, (int)ProductStatus.ACTIVE); 
                 var model = await _productDetailCollection.Find(filterDefinition).FirstOrDefaultAsync();
                 var result = new ProductDetailResponseModel()
                 {
