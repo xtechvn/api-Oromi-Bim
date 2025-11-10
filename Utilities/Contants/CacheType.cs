@@ -14,8 +14,8 @@
         public const string ARTICLE_CATEGORY_MENU = "ARTICLE_CATEGORY_MENU_";
         public const string ARTICLE_FOOTER_MENU = "ARTICLE_FOOTER_MENU";
 
-        public const string PRODUCT_LISTING = "PRODUCT_LISTING_";
-        public const string PRODUCT_DETAIL = "PRODUCT_DETAIL_";
+        public const string PRODUCT_LISTING = "OMORI_PRODUCT_LISTING_";
+        public const string PRODUCT_DETAIL = "OMORI_PRODUCT_DETAIL_";
         public const string ORDER_DETAIL_FE = "ORDER_DETAIL_FE_";
 
         public const string ADDRESS_CLIENT = "ADDRESS_CLIENT_";
