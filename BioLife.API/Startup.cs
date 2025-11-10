@@ -1,5 +1,7 @@
 ﻿using Entities.ConfigModels;
+using HuloToys_Service.IRepositories;
 using HuloToys_Service.RedisWorker;
+using HuloToys_Service.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
@@ -78,6 +80,7 @@ namespace HuloToys_Service
             services.AddSingleton<IWardRepository, WardRepository>();
             services.AddSingleton<IOrderRepository, OrderRepository>();
             services.AddSingleton<IAccountClientRepository, AccountClientRepository>();
+            services.AddSingleton<IAllCodeRepository, AllCodeRepository>();
 
             services.AddSingleton<RedisConn>();
             //services.Configure<ForwardedHeadersOptions>(options =>

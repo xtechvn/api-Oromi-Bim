@@ -29,6 +29,7 @@
         public const string DISTRICT = "DISTRICT";
         public const string WARD = "WARD";
         public const string LABEL = "LABEL";
+        public const string OMORI_HOMEPAGE_SLIDE = "OMORI_HOMEPAGE_SLIDE";
 
     }
 }
